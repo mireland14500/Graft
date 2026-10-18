@@ -63,6 +63,7 @@ both future prescriptions and the projection curve. Creators earn a 10% monthly 
 | `/plans/[slug]` | everyone | Plan detail: week-by-week outline, coach, reviews |
 | `/plans/recommended` | athlete | Ranked matches with reasons and warnings → "Start this plan" |
 | `/dashboard` | athlete | Next workout, this week, consistency |
+| `/calendar` | athlete | Runna-style plan calendar: week-by-week list opening on the current week (phase, sessions done, time and km per week; colour-coded sessions, ticks, missed and rest days), plus a month grid |
 | `/workout/[id]` | athlete | Personalised prescription + set/run logger, flags new bests |
 | `/progress` | athlete | Per-benchmark projection band with logged results overlaid |
 | `/coach` | creator | Pitch page for non-creators. For creators: active athletes, referrals, payouts, plans, referral link |

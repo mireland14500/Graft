@@ -49,7 +49,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       <PageHeader
         title={enrollment.plan.title}
         subtitle={`Week ${currentWeek} of ${enrollment.plan.durationWeeks} · ${enrollment.variant.daysPerWeek} days/week`}
-        action={<LinkButton href="/progress" variant="ghost">View progress</LinkButton>}
+        action={
+          <div className="flex gap-2">
+            <LinkButton href="/calendar" variant="ghost">Calendar</LinkButton>
+            <LinkButton href="/progress" variant="ghost">Progress</LinkButton>
+          </div>
+        }
       />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
