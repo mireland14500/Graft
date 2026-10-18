@@ -1,0 +1,454 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Sport {
+  POWERLIFTING
+  HYROX
+  CROSSFIT
+  BODYBUILDING
+  RUNNING
+}
+
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum Role {
+  ATHLETE
+  COACH
+  ADMIN
+}
+
+enum PlanStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+/// INCLUDED = part of the subscription (creator paid from the revenue pool).
+/// PREMIUM  = one-off purchase on top of the subscription.
+enum PlanAccess {
+  INCLUDED
+  PREMIUM
+}
+
+enum SessionKind {
+  STRENGTH
+  HYPERTROPHY
+  RUN_EASY
+  RUN_TEMPO
+  RUN_INTERVALS
+  RUN_LONG
+  CONDITIONING
+  HYROX_SIM
+  METCON
+  SKILL
+  RECOVERY
+}
+
+enum IntensityType {
+  PERCENT_1RM
+  RPE
+  FIXED_KG
+  BODYWEIGHT
+  PACE_ZONE
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum BenchmarkSource {
+  MANUAL
+  LOGGED
+  TEST
+}
+
+enum PayoutStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+// ─── Auth.js ─────────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(ATHLETE)
+  createdAt     DateTime  @default(now())
+
+  /// Gym / PT that referred this user (earns a boosted revenue share).
+  referredByCoachId String?
+  referredByCoach   CoachProfile? @relation("Referrals", fields: [referredByCoachId], references: [id])
+
+  accounts     Account[]
+  sessions     Session[]
+  profile      AthleteProfile?
+  coach        CoachProfile?   @relation("CoachUser")
+  planRequests PlanRequest[]
+  enrollments  Enrollment[]
+  workoutLogs  WorkoutLog[]
+  benchmarks   BenchmarkEntry[]
+  reviews      Review[]
+  subscription Subscription?
+  purchases    Purchase[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ─── Athlete ─────────────────────────────────────────────────────────────────
+
+model AthleteProfile {
+  userId       String   @id
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sex          String? /// "male" | "female" — used for DOTS & level estimates
+  birthYear    Int?
+  bodyweightKg Float?
+  equipment    String[]
+  updatedAt    DateTime @updatedAt
+}
+
+/// The answers from the onboarding wizard. Kept so we can re-match later and
+/// learn which requests convert into enrolments.
+model PlanRequest {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sport          Sport
+  goal           String
+  level          Level
+  /// 0 = Monday … 6 = Sunday
+  availableDays  Int[]
+  sessionMinutes Int
+  durationWeeks  Int
+  eventDate      DateTime?
+  equipment      String[]
+  /// Snapshot of benchmark values at the time of the request, e.g. { "squat_1rm": 140 }
+  benchmarks     Json
+  createdAt      DateTime @default(now())
+
+  enrollments Enrollment[]
+}
+
+model BenchmarkEntry {
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Key from src/lib/sports.ts, e.g. "squat_1rm", "run_5k", "hyrox_time"
+  key        String
+  /// kg for loads, seconds for times
+  value      Float
+  source     BenchmarkSource
+  recordedAt DateTime        @default(now())
+
+  @@index([userId, key, recordedAt])
+}
+
+// ─── Creators (PTs / gyms) ───────────────────────────────────────────────────
+
+model CoachProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation("CoachUser", fields: [userId], references: [id], onDelete: Cascade)
+  displayName     String
+  slug            String   @unique
+  bio             String?
+  gymName         String?
+  verified        Boolean  @default(false)
+  /// Stripe Connect Express account used for payouts.
+  stripeAccountId String?
+  /// Commission on each subscriber's monthly revenue, in basis points (1000 = 10%).
+  /// Default matches COACH_SHARE_BPS in src/lib/brand.ts; can be raised per coach for partner gyms.
+  revenueShareBps Int      @default(1000)
+  createdAt       DateTime @default(now())
+
+  plans     PlanTemplate[]
+  payouts   Payout[]
+  referrals User[]         @relation("Referrals")
+}
+
+// ─── Plan templates (authored by creators) ───────────────────────────────────
+// PlanTemplate → PlanVariant (one per days/week supported) → PlanWeek → PlanSession → SessionItem
+
+model PlanTemplate {
+  id             String     @id @default(cuid())
+  coachId        String
+  coach          CoachProfile @relation(fields: [coachId], references: [id])
+  slug           String     @unique
+  title          String
+  summary        String
+  description    String
+  sport          Sport
+  levels         Level[]
+  goals          String[]
+  /// Equipment required, e.g. ["barbell", "rack"]. Empty = none needed.
+  equipment      String[]
+  durationWeeks  Int
+  sessionMinutes Int
+  access         PlanAccess @default(INCLUDED)
+  priceCents     Int?
+  status         PlanStatus @default(DRAFT)
+
+  // Denormalised stats used by the matcher
+  ratingAvg       Float @default(0)
+  ratingCount     Int   @default(0)
+  enrollmentCount Int   @default(0)
+  completionRate  Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variants    PlanVariant[]
+  enrollments Enrollment[]
+  reviews     Review[]
+  purchases   Purchase[]
+
+  @@index([sport, status])
+}
+
+model PlanVariant {
+  id          String       @id @default(cuid())
+  planId      String
+  plan        PlanTemplate @relation(fields: [planId], references: [id], onDelete: Cascade)
+  daysPerWeek Int
+  weeks       PlanWeek[]
+  enrollments Enrollment[]
+
+  @@unique([planId, daysPerWeek])
+}
+
+model PlanWeek {
+  id         String        @id @default(cuid())
+  variantId  String
+  variant    PlanVariant   @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  weekNumber Int
+  focus      String?
+  isDeload   Boolean       @default(false)
+  sessions   PlanSession[]
+
+  @@unique([variantId, weekNumber])
+}
+
+model PlanSession {
+  id         String             @id @default(cuid())
+  weekId     String
+  week       PlanWeek           @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  order      Int
+  title      String
+  kind       SessionKind
+  estMinutes Int
+  notes      String?
+  items      SessionItem[]
+  scheduled  ScheduledWorkout[]
+}
+
+model SessionItem {
+  id             String         @id @default(cuid())
+  sessionId      String
+  session        PlanSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  order          Int
+  exerciseId     String
+  exercise       Exercise       @relation(fields: [exerciseId], references: [id])
+  sets           Int?
+  /// "5", "8-10", "AMRAP"
+  reps           String?
+  intensityType  IntensityType?
+  /// 75 (for 75% 1RM), 8 (RPE 8), 60 (kg), 3 (pace zone 3)
+  intensityValue Float?
+  durationSec    Int?
+  distanceM      Int?
+  restSec        Int?
+  notes          String?
+}
+
+model Exercise {
+  id           String  @id @default(cuid())
+  slug         String  @unique
+  name         String
+  /// "lift" | "accessory" | "run" | "erg" | "station" | "gymnastics"
+  category     String
+  /// Links the exercise to a benchmark so %1RM / pace zones can be resolved
+  benchmarkKey String?
+
+  items   SessionItem[]
+  setLogs SetLog[]
+  cardio  CardioLog[]
+}
+
+// ─── An athlete following a plan ─────────────────────────────────────────────
+
+model Enrollment {
+  id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId        String
+  plan          PlanTemplate     @relation(fields: [planId], references: [id])
+  variantId     String
+  variant       PlanVariant      @relation(fields: [variantId], references: [id])
+  requestId     String?
+  request       PlanRequest?     @relation(fields: [requestId], references: [id])
+  availableDays Int[]
+  startDate     DateTime         @db.Date
+  endDate       DateTime         @db.Date
+  status        EnrollmentStatus @default(ACTIVE)
+  createdAt     DateTime         @default(now())
+
+  workouts ScheduledWorkout[]
+
+  @@index([userId, status])
+  @@index([planId, status])
+}
+
+model ScheduledWorkout {
+  id            String      @id @default(cuid())
+  enrollmentId  String
+  enrollment    Enrollment  @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  planSessionId String
+  planSession   PlanSession @relation(fields: [planSessionId], references: [id])
+  date          DateTime    @db.Date
+  weekNumber    Int
+  completed     Boolean     @default(false)
+  log           WorkoutLog?
+
+  @@index([enrollmentId, date])
+}
+
+model WorkoutLog {
+  id                 String            @id @default(cuid())
+  userId             String
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduledWorkoutId String?           @unique
+  scheduledWorkout   ScheduledWorkout? @relation(fields: [scheduledWorkoutId], references: [id])
+  performedAt        DateTime          @default(now())
+  durationMin        Int?
+  rpe                Int?
+  notes              String?
+  sets               SetLog[]
+  cardio             CardioLog[]
+
+  @@index([userId, performedAt])
+}
+
+model SetLog {
+  id         String     @id @default(cuid())
+  logId      String
+  log        WorkoutLog @relation(fields: [logId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise   @relation(fields: [exerciseId], references: [id])
+  setNumber  Int
+  reps       Int
+  weightKg   Float?
+  rpe        Float?
+}
+
+model CardioLog {
+  id          String     @id @default(cuid())
+  logId       String
+  log         WorkoutLog @relation(fields: [logId], references: [id], onDelete: Cascade)
+  exerciseId  String?
+  exercise    Exercise?  @relation(fields: [exerciseId], references: [id])
+  distanceM   Int?
+  durationSec Int
+  avgHr       Int?
+}
+
+model Review {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId    String
+  plan      PlanTemplate @relation(fields: [planId], references: [id], onDelete: Cascade)
+  rating    Int
+  text      String?
+  createdAt DateTime     @default(now())
+
+  @@unique([userId, planId])
+}
+
+// ─── Money ───────────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String    @unique
+  stripeSubscriptionId String?   @unique
+  status               String /// mirrors Stripe: trialing | active | past_due | canceled
+  currentPeriodEnd     DateTime?
+}
+
+model Purchase {
+  id                    String       @id @default(cuid())
+  userId                String
+  user                  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId                String
+  plan                  PlanTemplate @relation(fields: [planId], references: [id])
+  amountCents           Int
+  stripeCheckoutId      String       @unique
+  createdAt             DateTime     @default(now())
+
+  @@unique([userId, planId])
+}
+
+model Payout {
+  id               String       @id @default(cuid())
+  coachId          String
+  coach            CoachProfile @relation(fields: [coachId], references: [id])
+  periodStart      DateTime
+  periodEnd        DateTime
+  amountCents      Int
+  status           PayoutStatus @default(PENDING)
+  stripeTransferId String?
+  /// Per-plan breakdown, see src/lib/payouts.ts
+  breakdown        Json
+  createdAt        DateTime     @default(now())
+
+  @@unique([coachId, periodStart])
+}
