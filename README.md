@@ -15,6 +15,7 @@ npm run dev
 
 - Sign-in needs Google OAuth keys (`AUTH_GOOGLE_*`) or a Resend key (`AUTH_RESEND_KEY`).
 - Payments are **off** until `STRIPE_SECRET_KEY` is set. Until then every plan is free to enrol, so the app works end to end without Stripe.
+- Homepage photos: drop `hyrox.jpg`, `crossfit.jpg`, `powerlifting.jpg`, `running.jpg`, `bodybuilding.jpg` and `coach.jpg` into `public/images/home/` (see the README there).
 - `npm test` runs the engine tests (matching, scheduling, prescriptions, projections, payouts, CSV import).
 
 ## Layout

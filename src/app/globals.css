@@ -14,3 +14,60 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
 }
+
+/* Homepage break-out sections can span the full window inside the centred <main> */
+body {
+  overflow-x: clip;
+}
+.full-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+@keyframes kenburns {
+  from { transform: scale(1.04); }
+  to { transform: scale(1.16) translate(-1.5%, -1%); }
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+@keyframes word-in {
+  from { opacity: 0; transform: translateY(55%); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(8%, -10%) scale(1.2); }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Scroll-triggered entrance, toggled by <Reveal> */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+/* Animations inside a section wait until it scrolls into view */
+.reveal:not(.is-visible) * {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
