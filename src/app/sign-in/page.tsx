@@ -1,5 +1,6 @@
 import { signIn } from "@/auth";
-import { Button, Card } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
+import { Card } from "@/components/ui";
 import { APP_NAME } from "@/lib/brand";
 
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string }> }) {
@@ -13,7 +14,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
           <p className="mt-1 text-sm text-muted">We&apos;ll save your answers and build your plan.</p>
         </div>
         <form action={async () => { "use server"; await signIn("google", { redirectTo: callbackUrl }); }}>
-          <Button variant="ghost" className="w-full">Continue with Google</Button>
+          <SubmitButton variant="ghost" className="w-full" pendingText="Opening Google…">Continue with Google</SubmitButton>
         </form>
         <div className="text-center text-xs text-muted">or</div>
         <form
@@ -24,7 +25,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
           }}
         >
           <input name="email" type="email" required placeholder="you@example.com" className="w-full rounded-xl border border-line px-4 py-2.5" />
-          <Button className="w-full">Email me a sign-in link</Button>
+          <SubmitButton className="w-full" pendingText="Sending your link…">Email me a sign-in link</SubmitButton>
         </form>
       </Card>
     </div>

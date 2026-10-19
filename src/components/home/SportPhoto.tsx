@@ -7,6 +7,8 @@ const FALLBACKS: Record<string, string> = {
   powerlifting: "from-indigo-400 via-violet-700 to-ink",
   running: "from-sky-400 via-cyan-700 to-ink",
   bodybuilding: "from-fuchsia-400 via-purple-700 to-ink",
+  yoga: "from-cyan-300 via-teal-600 to-ink",
+  pilates: "from-pink-300 via-fuchsia-600 to-ink",
   coach: "from-amber-300 via-orange-600 to-ink",
 };
 

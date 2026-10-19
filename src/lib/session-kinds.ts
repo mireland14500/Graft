@@ -16,4 +16,7 @@ export const SESSION_KINDS: Record<SessionKind, { label: string; bar: string; ch
   METCON: { label: "Metcon", bar: "bg-pink-500", chip: "bg-pink-100 text-pink-900", dot: "bg-pink-500" },
   SKILL: { label: "Skill", bar: "bg-teal-500", chip: "bg-teal-100 text-teal-900", dot: "bg-teal-500" },
   RECOVERY: { label: "Recovery", bar: "bg-slate-400", chip: "bg-slate-100 text-slate-800", dot: "bg-slate-400" },
+  YOGA: { label: "Yoga", bar: "bg-cyan-500", chip: "bg-cyan-100 text-cyan-900", dot: "bg-cyan-500" },
+  PILATES: { label: "Pilates", bar: "bg-fuchsia-500", chip: "bg-fuchsia-100 text-fuchsia-900", dot: "bg-fuchsia-500" },
+  MOBILITY: { label: "Mobility", bar: "bg-stone-400", chip: "bg-stone-100 text-stone-800", dot: "bg-stone-400" },
 };

@@ -4,11 +4,12 @@
  *
  *   npx tsx scripts/monthly-payouts.ts 2026-09
  */
+import { MAX_ACTIVE_PLANS } from "../src/lib/brand";
 import { prisma } from "../src/lib/db";
 import { computeCreatorPayouts, type SubscriberMonth } from "../src/lib/payouts";
 import { stripe } from "../src/lib/stripe";
 
-/** £9.99 less 20% VAT (£8.33) less Stripe fees (~£0.33) ≈ £8.00. Replace with real figures from Stripe balance transactions. */
+/** Per plan: £9.99 less 20% VAT (£8.33) less Stripe fees (~£0.33) ≈ £8.00. Replace with real figures from Stripe balance transactions. */
 const NET_MONTHLY_CENTS = Number(process.env.NET_MONTHLY_CENTS ?? 800);
 const DAY = 86_400_000;
 
@@ -32,12 +33,16 @@ export async function runPayouts(periodStart: Date) {
     const to = Math.min(e.endDate.getTime() + DAY, periodEnd.getTime());
     const sub = subscribers.get(e.userId) ?? {
       userId: e.userId,
-      netRevenueCents: NET_MONTHLY_CENTS,
+      netRevenueCents: 0,
       referredByCoachId: e.user.referredByCoachId,
       enrolments: [],
     };
     sub.enrolments.push({ planId: e.planId, coachId: e.plan.coachId, activeDays: Math.round((to - from) / DAY) });
     subscribers.set(e.userId, sub);
+  }
+  // The subscription is priced per plan, so a subscriber on two plans brings in twice the revenue.
+  for (const sub of subscribers.values()) {
+    sub.netRevenueCents = NET_MONTHLY_CENTS * Math.min(sub.enrolments.length, MAX_ACTIVE_PLANS);
   }
 
   const sales = await prisma.purchase.findMany({

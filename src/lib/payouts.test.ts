@@ -44,7 +44,7 @@ describe("plan import", () => {
   });
 
   it("reports bad rows with line numbers", () => {
-    const { errors } = importPlanCsv("days_per_week,week,session,session_title,kind,exercise\n3,1,1,X,YOGA,run");
+    const { errors } = importPlanCsv("days_per_week,week,session,session_title,kind,exercise\n3,1,1,X,ZUMBA,run");
     expect(errors[0]).toContain("Line 2");
   });
 });

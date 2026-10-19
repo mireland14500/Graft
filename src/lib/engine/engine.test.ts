@@ -159,3 +159,13 @@ describe("prescription", () => {
     expect(r.label).toBe("6km @ 6:30/km (Easy)");
   });
 });
+
+describe("race predictions", async () => {
+  const { racePredictions } = await import("./race");
+  it("predicts standard distances from a 5k", () => {
+    const p = racePredictions(1500);
+    expect(p.map((r) => r.label)).toEqual(["5k", "10k", "Half marathon", "Marathon"]);
+    expect(p[0].seconds).toBe(1500);
+    expect(formatTime(p[3].seconds)).toBe("3:59:47");
+  });
+});

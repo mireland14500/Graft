@@ -14,7 +14,7 @@ import { SPORT_DEFS, SPORTS } from "@/lib/sports";
 
 const MARQUEE = [
   "Hyrox", "Weights from your 1RM", "CrossFit", "Paces from your 5k", "Powerlifting",
-  "Built around your week", "Running", "Plans from real coaches", "Bodybuilding", "Log every set",
+  "Built around your week", "Running", "Plans from real coaches", "Bodybuilding", "Log every set", "Yoga", "Two plans, one calendar", "Pilates",
 ];
 
 const ATHLETE_STEPS = [
@@ -55,14 +55,14 @@ export default async function Home() {
         />
         <div className="relative mx-auto w-full max-w-6xl px-4 py-24">
           <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white/80 backdrop-blur">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand" /> Hyrox · CrossFit · Powerlifting · Running · Bodybuilding
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand" /> Hyrox · CrossFit · Powerlifting · Running · Bodybuilding · Yoga · Pilates
           </p>
           <h1 className="max-w-3xl text-5xl font-black leading-[1.02] tracking-tight sm:text-6xl md:text-7xl">
             Your centralised hub for <span className="text-brand">coaching.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-white/75 md:text-xl">
             Plans from real coaches for{" "}
-            <RotatingWord words={["Hyrox", "CrossFit", "powerlifting", "running", "bodybuilding"]} className="font-bold text-white" />
+            <RotatingWord words={["Hyrox", "CrossFit", "powerlifting", "running", "bodybuilding", "yoga", "Pilates"]} className="font-bold text-white" />
             {" "}— built around your week and personalised to your numbers.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
@@ -98,7 +98,8 @@ export default async function Home() {
           {SPORTS.map((id, i) => {
             const sport = SPORT_DEFS[id];
             const slot = id.toLowerCase() as keyof typeof photos;
-            const big = i < 3; // Hyrox, CrossFit, Powerlifting lead
+            // Powerlifting, Hyrox and CrossFit lead in a row of three; the other four sit two by two
+            const big = i < 3;
             return (
               <Reveal key={id} delay={i * 80} className={big ? "lg:col-span-2" : "lg:col-span-3"}>
                 <Link href={`/onboarding?sport=${id}`} className="group relative block h-80 overflow-hidden rounded-3xl bg-ink">
@@ -221,8 +222,9 @@ export default async function Home() {
             <p className="mt-4 text-6xl font-black tracking-tight md:text-7xl">
               {formatPence(MONTHLY_PRICE_PENCE)}<span className="text-2xl font-bold text-muted">/month</span>
             </p>
+            <p className="mt-2 text-muted">per plan · want two? Add a second plan for another {formatPence(MONTHLY_PRICE_PENCE)}</p>
             <ul className="mx-auto mt-8 grid max-w-xl gap-3 text-left sm:grid-cols-2">
-              {["Every included plan, every sport", "Sessions personalised to your numbers", "Calendar built around your days", "Progress tracking & projections"].map((f) => (
+              {["Any included plan, any sport", "Run two plans side by side", "Sessions personalised to your numbers", "Progress tracking & projections"].map((f) => (
                 <li key={f} className="flex items-center gap-3"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand text-xs font-bold">✓</span>{f}</li>
               ))}
             </ul>

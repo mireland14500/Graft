@@ -10,6 +10,8 @@ Put photos here with these exact names and they appear on the homepage automatic
 | `powerlifting.jpg` | Hero slideshow + Powerlifting card |
 | `running.jpg` | Running card |
 | `bodybuilding.jpg` | Bodybuilding card |
+| `yoga.jpg` | Yoga card |
+| `pilates.jpg` | Pilates card |
 | `coach.jpg` | "For coaches" section |
 
 `.jpg`, `.jpeg`, `.webp`, `.png` and `.avif` all work. Landscape, at least 1600px wide, works best.

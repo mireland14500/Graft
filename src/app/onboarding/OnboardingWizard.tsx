@@ -110,6 +110,11 @@ export function OnboardingWizard({ initialSport }: { initialSport?: Sport }) {
 
       {step === 2 && def && (
         <Card className="space-y-4">
+          {def.benchmarks.length === 0 && (
+            <p className="text-sm text-muted">
+              No numbers needed for {def.name} — we track your consistency instead. Your bodyweight is optional.
+            </p>
+          )}
           {def.benchmarks.map((b) => (
             <label key={b.key} className="block">
               <span className="text-sm font-medium">
@@ -211,7 +216,13 @@ export function OnboardingWizard({ initialSport }: { initialSport?: Sport }) {
             What your numbers could look like after <b>{weeks} weeks</b> training <b>{days.length}×/week</b> as{" "}
             {resolvedLevel === "INTERMEDIATE" ? "an" : "a"} <b>{resolvedLevel.toLowerCase()}</b>.
           </p>
-          {projections.length === 0 && <Card>Add at least one number in “Your numbers” to see a projection.</Card>}
+          {projections.length === 0 && (
+            <Card>
+              {def.benchmarks.length === 0
+                ? `${def.name} is about showing up: we'll track your streak and sessions completed rather than a number.`
+                : "Add at least one number in “Your numbers” to see a projection."}
+            </Card>
+          )}
           {projections[0] && (
             <Card>
               <p className="font-semibold">{projections[0].label}</p>

@@ -5,7 +5,7 @@ import path from "node:path";
  * Photo slots for the homepage. Drop a file named after the slot into
  * public/images/home/ (e.g. hyrox.jpg) and it replaces the designed placeholder.
  */
-export const PHOTO_SLOTS = ["hyrox", "crossfit", "powerlifting", "running", "bodybuilding", "coach"] as const;
+export const PHOTO_SLOTS = ["hyrox", "crossfit", "powerlifting", "running", "bodybuilding", "yoga", "pilates", "coach"] as const;
 export type PhotoSlot = (typeof PHOTO_SLOTS)[number];
 
 const DIR = path.join(process.cwd(), "public", "images", "home");

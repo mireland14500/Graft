@@ -1,3 +1,4 @@
+import { MAX_ACTIVE_PLANS } from "./brand";
 import { prisma } from "./db";
 import { buildSchedule } from "./engine/scheduler";
 
@@ -9,6 +10,8 @@ export async function enrollInPlan(opts: {
   availableDays: number[];
   requestId?: string;
   startDate?: Date;
+  /** Swap out one of the athlete's current plans instead of adding alongside it. */
+  replaceEnrollmentId?: string;
 }) {
   const variant = await prisma.planVariant.findUniqueOrThrow({
     where: { planId_daysPerWeek: { planId: opts.planId, daysPerWeek: opts.daysPerWeek } },
@@ -23,11 +26,16 @@ export async function enrollInPlan(opts: {
   const dates = schedule.map((s) => s.date.getTime());
 
   return prisma.$transaction(async (tx) => {
-    // One active plan at a time keeps the dashboard simple; revisit for hybrid athletes.
-    await tx.enrollment.updateMany({
-      where: { userId: opts.userId, status: "ACTIVE" },
-      data: { status: "CANCELLED" },
-    });
+    if (opts.replaceEnrollmentId) {
+      await tx.enrollment.updateMany({
+        where: { id: opts.replaceEnrollmentId, userId: opts.userId, status: "ACTIVE" },
+        data: { status: "CANCELLED" },
+      });
+    }
+    const active = await tx.enrollment.findMany({ where: { userId: opts.userId, status: "ACTIVE" }, select: { planId: true } });
+    if (active.some((e) => e.planId === opts.planId)) throw new EnrollmentError("already_on_plan");
+    if (active.length >= MAX_ACTIVE_PLANS) throw new EnrollmentError("plan_limit");
+
     const enrollment = await tx.enrollment.create({
       data: {
         userId: opts.userId,
@@ -43,4 +51,10 @@ export async function enrollInPlan(opts: {
     await tx.planTemplate.update({ where: { id: opts.planId }, data: { enrollmentCount: { increment: 1 } } });
     return enrollment;
   });
+}
+
+export class EnrollmentError extends Error {
+  constructor(public code: "plan_limit" | "already_on_plan") {
+    super(code);
+  }
 }

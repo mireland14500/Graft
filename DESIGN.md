@@ -63,7 +63,7 @@ both future prescriptions and the projection curve. Creators earn a 10% monthly 
 | `/plans/[slug]` | everyone | Plan detail: week-by-week outline, coach, reviews |
 | `/plans/recommended` | athlete | Ranked matches with reasons and warnings → "Start this plan" |
 | `/dashboard` | athlete | Next workout, this week, consistency |
-| `/calendar` | athlete | Runna-style plan calendar: week-by-week list opening on the current week (phase, sessions done, time and km per week; colour-coded sessions, ticks, missed and rest days), plus a month grid |
+| `/calendar` | athlete | Runna-style calendar across all active plans: one week at a time (swipe / arrows / week chips), compact colour-tinted session blocks, tap a block for a breakdown sheet (what to do + personalised steps); plus a month grid |
 | `/workout/[id]` | athlete | Personalised prescription + set/run logger, flags new bests |
 | `/progress` | athlete | Per-benchmark projection band with logged results overlaid |
 | `/coach` | creator | Pitch page for non-creators. For creators: active athletes, referrals, payouts, plans, referral link |
@@ -160,7 +160,7 @@ are rewarded for plans people actually *keep training on*, not plans they click 
 - **Adaptive plans.** Runna adjusts plans automatically. Phase 2: if an athlete misses sessions or logs RPE well off target, nudge the next week's %1RM up or down.
 - **Integrations.** Strava, Garmin, Apple Health and Concept2 imports for runs and rows would remove most manual logging.
 - **Units.** Stored in metric. Add a lb display preference.
-- **One active plan at a time.** This is enforced in `enrollInPlan`. Hybrid athletes may want two (e.g. lifting + running); revisit later.
+- **Up to two plans at once** (`MAX_ACTIVE_PLANS`). The subscription is priced per plan: its Stripe quantity equals the number of active plans (`syncSubscriptionQuantity`), so a second plan doubles the price to £19.98. Payouts treat each plan as bringing in its own £9.99.
 
 ## 9. Suggested roadmap
 

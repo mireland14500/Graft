@@ -1,7 +1,7 @@
 // Single source of truth for what each sport asks the athlete and what it can project.
 // Shared by the onboarding wizard (client), the matcher and the progress page (server).
 
-export const SPORTS = ["POWERLIFTING", "HYROX", "CROSSFIT", "BODYBUILDING", "RUNNING"] as const;
+export const SPORTS = ["POWERLIFTING", "HYROX", "CROSSFIT", "BODYBUILDING", "RUNNING", "YOGA", "PILATES"] as const;
 export type Sport = (typeof SPORTS)[number];
 
 export const LEVELS = ["BEGINNER", "INTERMEDIATE", "ADVANCED"] as const;
@@ -108,6 +108,29 @@ export const SPORT_DEFS: Record<Sport, SportDef> = {
       { key: "run_10k", label: "10k time", unit: "time", better: "lower", model: "endurance", optional: true, placeholder: "52:00" },
     ],
   },
+  // Yoga and Pilates are tracked by consistency rather than a number, so they have no benchmarks.
+  YOGA: {
+    id: "YOGA",
+    name: "Yoga",
+    tagline: "Mobility, recovery and calm — on its own or alongside your main plan.",
+    goals: [
+      { id: "mobility", label: "Move better and loosen up" },
+      { id: "recovery", label: "Recover from hard training" },
+      { id: "mindfulness", label: "De-stress and breathe" },
+    ],
+    benchmarks: [],
+  },
+  PILATES: {
+    id: "PILATES",
+    name: "Pilates",
+    tagline: "Core strength, control and posture that carry over to every sport.",
+    goals: [
+      { id: "core_strength", label: "Build core strength" },
+      { id: "posture", label: "Improve posture and control" },
+      { id: "injury_prevention", label: "Bulletproof my body" },
+    ],
+    benchmarks: [],
+  },
 };
 
 export const EQUIPMENT = [
@@ -121,6 +144,8 @@ export const EQUIPMENT = [
   { id: "sled", label: "Sled" },
   { id: "wall_ball", label: "Wall ball" },
   { id: "pullup_bar", label: "Pull-up bar" },
+  { id: "mat", label: "Exercise mat" },
+  { id: "reformer", label: "Pilates reformer" },
 ] as const;
 
 export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;

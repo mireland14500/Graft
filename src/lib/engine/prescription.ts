@@ -31,7 +31,7 @@ export function resolvePrescription(item: PrescriptionItem, benchmarks: Record<s
   const volume = [
     item.sets && item.reps ? `${item.sets} × ${item.reps}` : item.sets ? `${item.sets} sets` : null,
     item.distanceM ? (item.distanceM >= 1000 ? `${item.distanceM / 1000}km` : `${item.distanceM}m`) : null,
-    item.durationSec ? formatTime(item.durationSec) : null,
+    item.durationSec ? (item.durationSec % 60 === 0 ? `${item.durationSec / 60} min` : formatTime(item.durationSec)) : null,
   ]
     .filter(Boolean)
     .join(" · ");

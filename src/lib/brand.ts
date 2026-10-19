@@ -4,6 +4,10 @@ export const APP_NAME = "Graft";
 // Commercial terms shown in the UI. The Stripe price (STRIPE_PRICE_MONTHLY) must match MONTHLY_PRICE_PENCE.
 export const MONTHLY_PRICE_PENCE = 999;
 export const TRIAL_DAYS = 7;
+/** How many plans an athlete can follow at once. Each plan adds MONTHLY_PRICE_PENCE to the subscription. */
+export const MAX_ACTIVE_PLANS = 2;
+export const subscriptionPricePence = (plans: number) => MONTHLY_PRICE_PENCE * Math.max(plans, 1);
+
 /** Coach commission on each subscriber's monthly revenue, in basis points (1000 = 10%). */
 export const COACH_SHARE_BPS = 1000;
 

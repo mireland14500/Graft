@@ -1,12 +1,15 @@
 import { prisma } from "./db";
 
-export async function activeEnrollment(userId: string) {
-  return prisma.enrollment.findFirst({
+/** The athlete's current plans, oldest first (their "main" plan leads). */
+export async function activeEnrollments(userId: string) {
+  return prisma.enrollment.findMany({
     where: { userId, status: "ACTIVE" },
     include: { plan: true, variant: true, request: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "asc" },
   });
 }
+
+export type ActiveEnrollment = Awaited<ReturnType<typeof activeEnrollments>>[number];
 
 /** Share of sessions scheduled up to today that were completed. */
 export async function adherence(enrollmentId: string): Promise<{ done: number; due: number; rate: number }> {

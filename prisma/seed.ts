@@ -41,6 +41,19 @@ const EXERCISES: [slug: string, name: string, category: string, benchmarkKey?: s
   ["farmers-carry", "Farmers carry", "station"],
   ["sandbag-lunge", "Sandbag lunge", "station"],
   ["wall-ball", "Wall ball", "station"],
+  ["sun-salutation", "Sun salutation flow", "flow"],
+  ["hip-opening-flow", "Hip-opening flow", "flow"],
+  ["hamstring-flow", "Hamstring & lower-back flow", "flow"],
+  ["thoracic-flow", "Thoracic spine & shoulder flow", "flow"],
+  ["yin-holds", "Yin holds", "flow"],
+  ["breathwork", "Breathwork", "flow"],
+  ["pilates-hundred", "The hundred", "flow"],
+  ["pilates-roll-up", "Roll-up", "flow"],
+  ["pilates-single-leg-stretch", "Single-leg stretch", "flow"],
+  ["pilates-bridge", "Pilates bridge", "flow"],
+  ["pilates-side-kick", "Side-kick series", "flow"],
+  ["pilates-swimming", "Swimming", "flow"],
+  ["pilates-plank", "Plank series", "flow"],
 ];
 
 type Item = {
@@ -117,6 +130,27 @@ const hypertrophyPool: Pool = (w) => {
   ];
 };
 
+const flow = (ex: string, minutes: number, notes?: string): Item => ({ ex, durationSec: minutes * 60, notes });
+const mat = (ex: string, sets: number, reps: string, notes?: string): Item => ({ ex, sets, reps, type: "BODYWEIGHT", notes, restSec: 30 });
+
+const yogaPool: Pool = (w) => {
+  const hold = w <= 4 ? 4 : w <= 8 ? 6 : 8; // minutes per flow grows across the block
+  return [
+    { slot: 2, session: { title: "Mobility flow", kind: "YOGA", minutes: 35, items: [flow("sun-salutation", 6, "Move with the breath, 5 rounds"), flow("hip-opening-flow", hold, "Low lunge, lizard, pigeon"), flow("hamstring-flow", hold), flow("breathwork", 3, "Box breathing 4-4-4-4")] } },
+    { slot: 5, session: { title: "Recovery & yin", kind: "MOBILITY", minutes: 40, items: [flow("thoracic-flow", hold, "Thread the needle, open book"), flow("yin-holds", hold + 6, "Hold each shape 2–3 min, fully relaxed"), flow("breathwork", 5, "Long exhales to switch off")] } },
+    { slot: 6, session: { title: "Strength-focused flow", kind: "YOGA", minutes: 45, items: [flow("sun-salutation", 10, "Add chair pose and warrior II holds"), flow("hip-opening-flow", hold), flow("thoracic-flow", hold), flow("yin-holds", 6)] } },
+  ];
+};
+
+const pilatesPool: Pool = (w) => {
+  const reps = w <= 3 ? "8" : w <= 6 ? "10" : "12";
+  return [
+    { slot: 1, session: { title: "Core foundations", kind: "PILATES", minutes: 40, items: [mat("pilates-hundred", 1, "100", "Pump the arms, ribs down"), mat("pilates-roll-up", 3, reps), mat("pilates-single-leg-stretch", 3, reps + " each side"), mat("pilates-plank", 3, "30s")] } },
+    { slot: 3, session: { title: "Glutes & posture", kind: "PILATES", minutes: 40, items: [mat("pilates-bridge", 3, reps), mat("pilates-side-kick", 3, reps + " each side"), mat("pilates-swimming", 3, "30s"), flow("thoracic-flow", 5)] } },
+    { slot: 5, session: { title: "Full-body control", kind: "PILATES", minutes: 45, items: [mat("pilates-hundred", 1, "100"), mat("pilates-roll-up", 3, reps), mat("pilates-bridge", 3, reps), mat("pilates-plank", 4, "40s"), mat("pilates-swimming", 3, "40s")] } },
+  ];
+};
+
 const PLANS: PlanSeed[] = [
   {
     coach: "iron-lab", slug: "strength-foundations-12", title: "Strength Foundations", sport: "POWERLIFTING",
@@ -174,12 +208,34 @@ const PLANS: PlanSeed[] = [
     levels: ["BEGINNER", "INTERMEDIATE"], goals: ["build_muscle", "recomp"], equipment: ["barbell", "dumbbells", "machines"],
     weeks: 10, minutes: 65, days: [3, 4, 5], rating: [4.6, 268], completion: 0.66, pool: hypertrophyPool,
   },
+  {
+    coach: "flow-studio", slug: "yoga-for-athletes-8", title: "Yoga for Athletes", sport: "YOGA",
+    summary: "Short mobility and recovery flows that fit around your main training.",
+    description: "Built to pair with a lifting, Hyrox or running plan. Hips, hamstrings and upper back — the places hard training tightens up.\nAll you need is a mat.",
+    levels: ["BEGINNER", "INTERMEDIATE", "ADVANCED"], goals: ["mobility", "recovery"], equipment: [],
+    weeks: 8, minutes: 40, days: [1, 2, 3], rating: [4.8, 154], completion: 0.74, pool: yogaPool,
+  },
+  {
+    coach: "flow-studio", slug: "slow-flow-calm-6", title: "Slow Flow & Breathe", sport: "YOGA",
+    summary: "Gentle flows and breathwork to unwind and sleep better.",
+    description: "Six weeks of slower sessions with long holds and guided breathing.",
+    levels: ["BEGINNER", "INTERMEDIATE"], goals: ["mindfulness", "recovery", "mobility"], equipment: [],
+    weeks: 6, minutes: 35, days: [2, 3], rating: [4.7, 88], completion: 0.71, pool: yogaPool,
+  },
+  {
+    coach: "flow-studio", slug: "pilates-core-8", title: "Pilates Core Strength", sport: "PILATES",
+    summary: "Mat Pilates to build a strong, stable core that carries over to every lift and run.",
+    description: "Reps build every few weeks. Focus on slow, controlled movement and breathing.\nAll you need is a mat.",
+    levels: ["BEGINNER", "INTERMEDIATE"], goals: ["core_strength", "posture", "injury_prevention"], equipment: [],
+    weeks: 8, minutes: 40, days: [2, 3], rating: [4.7, 121], completion: 0.69, pool: pilatesPool,
+  },
 ];
 
 const COACHES = [
   { slug: "iron-lab", displayName: "Iron Lab Coaching", gymName: "Iron Lab Barbell Club", bio: "Strength coaches with 15 years of meet experience." },
   { slug: "hyrox-hq", displayName: "Race Ready Coaching", gymName: "Race Ready Fitness", bio: "Hyrox specialists. 400+ athletes over the line." },
   { slug: "sam-rivers", displayName: "Sam Rivers", gymName: null, bio: "Run coach and hybrid athlete, UKA qualified." },
+  { slug: "flow-studio", displayName: "Flow Studio", gymName: "Flow Studio", bio: "Yoga and Pilates teachers who specialise in athletes." },
 ];
 
 async function main() {
@@ -200,7 +256,8 @@ async function main() {
   }
 
   for (const p of PLANS) {
-    await prisma.planTemplate.deleteMany({ where: { slug: p.slug } });
+    // Leave existing plans alone: athletes may be enrolled in them.
+    if (await prisma.planTemplate.findUnique({ where: { slug: p.slug } })) continue;
     await prisma.planTemplate.create({
       data: {
         coachId: coachId.get(p.coach)!, slug: p.slug, title: p.title, summary: p.summary, description: p.description,

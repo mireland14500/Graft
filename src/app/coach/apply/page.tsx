@@ -1,4 +1,5 @@
-import { Button, Card, PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
+import { Card, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/session";
 import { applyAsCoachAction } from "../actions";
 
@@ -15,7 +16,7 @@ export default async function ApplyPage() {
             <span className="text-sm font-medium">Bio</span>
             <textarea name="bio" rows={4} className="mt-1 w-full rounded-xl border border-line px-3 py-2" placeholder="Qualifications, who you coach, results…" />
           </label>
-          <Button className="w-full">Create creator profile</Button>
+          <SubmitButton className="w-full" pendingText="Creating profile…">Create creator profile</SubmitButton>
         </form>
       </Card>
     </div>
