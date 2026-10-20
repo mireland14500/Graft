@@ -306,6 +306,8 @@ export default async function Home() {
             <Link href="/plans" className="hover:text-ink">Plans</Link>
             <Link href="/coach" className="hover:text-ink">For coaches</Link>
             <Link href="/sign-in" className="hover:text-ink">Sign in</Link>
+            <Link href="/privacy" className="hover:text-ink">Privacy</Link>
+            <Link href="/terms" className="hover:text-ink">Terms</Link>
           </div>
         </footer>
       </section>

@@ -1,4 +1,5 @@
 import { AuthError } from "next-auth";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { signIn } from "@/auth";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -61,6 +62,10 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
           <input name="email" type="email" required placeholder="you@example.com" className="w-full rounded-xl border border-line px-4 py-2.5" />
           <SubmitButton className="w-full" pendingText="Sending your link…">Email me a sign-in link</SubmitButton>
         </form>
+        <p className="text-center text-xs text-muted">
+          By continuing you agree to our <Link href="/terms" className="underline">Terms</Link> and{" "}
+          <Link href="/privacy" className="underline">Privacy policy</Link>.
+        </p>
       </Card>
     </div>
   );
