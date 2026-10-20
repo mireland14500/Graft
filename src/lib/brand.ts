@@ -1,8 +1,8 @@
 // Change the name here once it's decided — every page reads it from this file.
 export const APP_NAME = "Graft";
 
-// Shown on the Privacy and Terms pages. Change to a real inbox you check before publishing.
-export const CONTACT_EMAIL = "privacy@yourdomain.com";
+// Shown on the Privacy and Terms pages.
+export const CONTACT_EMAIL = "mathew.ireland@yahoo.com";
 export const LEGAL_UPDATED = "20 October 2026";
 
 // Commercial terms shown in the UI. The Stripe price (STRIPE_PRICE_MONTHLY) must match MONTHLY_PRICE_PENCE.
